@@ -498,7 +498,29 @@ export gridno={gridno}\n'''.format(**self.__dict__))
         elif os.path.exists(rtofsatgz):
            logger.info('File %s exists, untar it into %s'%(rtofsatgz,archva))
            with tarfile.open(rtofsatgz,'r:gz') as tgz:
-              tgz.extractall()
+              
+              import os
+              
+              def is_within_directory(directory, target):
+                  
+                  abs_directory = os.path.abspath(directory)
+                  abs_target = os.path.abspath(target)
+              
+                  prefix = os.path.commonprefix([abs_directory, abs_target])
+                  
+                  return prefix == abs_directory
+              
+              def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+              
+                  for member in tar.getmembers():
+                      member_path = os.path.join(path, member.name)
+                      if not is_within_directory(path, member_path):
+                          raise Exception("Attempted Path Traversal in Tar File")
+              
+                  tar.extractall(path, members, numeric_owner) 
+                  
+              
+              safe_extract(tgz)
         else:
            logger.error('Neither %s nor %s exists'%(rtofsa,rtofsatgz))
            raise
@@ -548,7 +570,26 @@ subregion %s
         elif os.path.exists(rtofs_restart_atgz):
            logger.info('File %s exists, untar it into %s'%(rtofs_restart_atgz,restart_in_a))
            with tarfile.open(rtofs_restart_atgz,'r:gz') as tgz:
-              tgz.extractall()
+              def is_within_directory(directory, target):
+                  
+                  abs_directory = os.path.abspath(directory)
+                  abs_target = os.path.abspath(target)
+              
+                  prefix = os.path.commonprefix([abs_directory, abs_target])
+                  
+                  return prefix == abs_directory
+              
+              def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+              
+                  for member in tar.getmembers():
+                      member_path = os.path.join(path, member.name)
+                      if not is_within_directory(path, member_path):
+                          raise Exception("Attempted Path Traversal in Tar File")
+              
+                  tar.extractall(path, members, numeric_owner) 
+                  
+              
+              safe_extract(tgz)
         else:
            logger.error('Neither %s nor %s exists'%(rtofs_restart_a,rtofs_restart_atgz))
            raise
